@@ -1,14 +1,14 @@
 import React, { useEffect, useReducer } from 'react';
-import axios from 'axios';
 
-interface userData {
+export interface UserData {
 	id: number;
 	name: string;
 	username: string;
+	email: string;
 }
 
 interface ReducerState {
-	users: userData[] | null;
+	data: UserData[] | UserData | null;
 	loading: boolean;
 	error: any;
 }
@@ -16,7 +16,7 @@ interface ReducerState {
 interface Action {
 	type: string;
 	error?: any;
-	data?: userData[] | null;
+	data?: UserData[] | UserData | null;
 }
 
 function reducer(state: ReducerState, action: Action): ReducerState {
@@ -24,21 +24,21 @@ function reducer(state: ReducerState, action: Action): ReducerState {
 	switch (action.type) {
 		case 'LOADING': {
 			return {
-				users: null,
+				data: null,
 				loading: true,
 				error: null,
 			};
 		}
 		case 'ERROR': {
 			return {
-				users: null,
+				data: null,
 				loading: false,
 				error: action.error,
 			};
 		}
 		case 'SUCCESS': {
 			return {
-				users: action.data,
+				data: action.data,
 				loading: false,
 				error: null,
 			};
@@ -49,9 +49,13 @@ function reducer(state: ReducerState, action: Action): ReducerState {
 	}
 }
 
-export default function useAsync(callback: () => any, deps: [] = []) {
+export default function useAsync(
+	callback: () => any,
+	deps: any = [],
+	skip: boolean = false
+): [ReducerState, () => Promise<void>] {
 	const [state, dispatch] = useReducer(reducer, {
-		users: null,
+		data: null,
 		loading: false,
 		error: null,
 	});
@@ -59,17 +63,16 @@ export default function useAsync(callback: () => any, deps: [] = []) {
 	const fetchData = async () => {
 		try {
 			dispatch({ type: 'LOADING' });
-
-			const response = await callback();
-			dispatch({ type: 'SUCCESS', data: response.data });
+			const data = await callback();
+			dispatch({ type: 'SUCCESS', data: data });
 		} catch (e) {
 			dispatch({ type: 'ERROR' });
 		}
 	};
 
 	useEffect(() => {
+		if (!skip) return;
 		fetchData();
 	}, deps);
-
 	return [state, fetchData];
 }

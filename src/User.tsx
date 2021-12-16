@@ -2,22 +2,28 @@ import React from 'react';
 import useAsync from './Async';
 import axios from 'axios';
 
-export default function User(): JSX.Element {
-	const [state] = useAsync(
-		axios.get('https://jsonplaceholder.typicode.com/users')
+async function getUserData(id: number) {
+	const userData = await axios.get(
+		`https://jsonplaceholder.typicode.com/users/${id}`
 	);
-	if (state.loading) return <h1>loading</h1>;
-	if (state.error) return <h1>error</h1>;
-	if (!state.users) return <div>user 데이터가 없습니다.</div>;
+	console.log(userData);
+	return userData.data;
+}
+
+export default function User({ id }: { id: number }): JSX.Element {
+	const [state] = useAsync(() => getUserData(id), [id], true);
+
+	if (state.loading) return <div>로딩중..</div>;
+	if (state.error) return <div>에러가 발생했습니다</div>;
+	if (!state.data || Array.isArray(state.data))
+		return <div>유저 데이터가 없습니다</div>;
 	return (
-		<ul>
-			{state.users.map((user) => {
-				return (
-					<li key={user.id}>
-						{user.username} {user.name}
-					</li>
-				);
-			})}
-		</ul>
+		<div>
+			<h2>{state.data.name}</h2>
+			<p>
+				<b>email: </b>
+				{state.data.email}
+			</p>
+		</div>
 	);
 }

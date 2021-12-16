@@ -1,15 +1,14 @@
 import React from 'react';
 import User from './User';
 import Counter from './Counter';
-import Test from './Test';
+import Users from './Users';
 
 function App() {
 	return (
 		<div>
 			<span>hello</span>
-			<User></User>
+			<Users />
 			<Counter />
-			<Test></Test>
 		</div>
 	);
 }
