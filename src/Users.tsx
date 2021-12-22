@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import useAsync from './Async';
+import { useState } from 'react';
+import useAsync from 'react-async';
 import User from './User';
 import axios from 'axios';
 
@@ -12,13 +12,13 @@ async function getUsersData() {
 
 export default function Users(): JSX.Element {
 	const [userId, setUserId] = useState(0);
-	const [state, refetch] = useAsync(getUsersData, [], true);
-	const { loading, data, error } = state;
+	const { state } = new useAsync({ promiseFn: getUsersData });
+	const { isLoading, data, error, reload } = state;
 
-	if (loading) return <h1>loading</h1>;
+	if (isLoading) return <h1>loading</h1>;
 	if (error) return <h1>error</h1>;
 	if (!data || !Array.isArray(data))
-		return <button onClick={refetch}>유저 데이터 다시 불러오기</button>;
+		return <button onClick={reload}>유저 데이터 다시 불러오기</button>;
 	return (
 		<>
 			<ul>
@@ -32,7 +32,7 @@ export default function Users(): JSX.Element {
 					</li>
 				))}
 			</ul>
-			<button onClick={refetch}>다시 불러오기</button>
+			<button onClick={reload}>다시 불러오기</button>
 			{userId && <User id={userId} />}
 		</>
 	);
